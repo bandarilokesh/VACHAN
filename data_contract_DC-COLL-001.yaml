@@ -1,0 +1,92 @@
+---
+# Data Contract: Golden Customer 360
+# ID: DC-COLL-001
+# Owner: Data Engineering Team
+# Version: 1.0.0
+
+contract_id: DC-COLL-001
+name: Golden Customer 360
+version: "1.0.0"
+owner: Data Engineering
+description: >
+  A unified, deduplicated view of every Maple Bank customer, built by
+  resolving identities across CRM (1.02M records), Cards (660K), Loans (404K),
+  Deposits (780K) and External (1M) source systems.
+
+schema:
+  primary_key: golden_id
+  tables:
+    - name: gold_c360_customer
+      description: One row per unique person
+      columns:
+        - {name: golden_id,          type: VARCHAR, not_null: true,  description: "Synthetic persistent key assigned by identity resolution"}
+        - {name: primary_crm_id,     type: VARCHAR, not_null: true,  description: "CRM ID chosen by survivorship (latest profile)"}
+        - {name: first_name,         type: VARCHAR, not_null: false, description: "Lowercase cleaned first name"}
+        - {name: last_name,          type: VARCHAR, not_null: true,  description: "Lowercase cleaned last name"}
+        - {name: dob,                type: DATE,    not_null: false, description: "Date of birth"}
+        - {name: email,              type: VARCHAR, not_null: false, description: "Lowercase email"}
+        - {name: phone,              type: VARCHAR, not_null: false, description: "Last 10 digits of primary phone"}
+        - {name: postal_code,        type: VARCHAR, not_null: false, description: "Uppercase, space-stripped postal code"}
+        - {name: consent_call,       type: BOOLEAN, not_null: true,  description: "Conservative AND across all CRM records"}
+        - {name: consent_sms,        type: BOOLEAN, not_null: true,  description: "Conservative AND across all CRM records"}
+        - {name: vulnerability_flag, type: BOOLEAN, not_null: true,  description: "OR across all CRM records"}
+        - {name: deceased_flag,      type: BOOLEAN, not_null: true,  description: "OR across all CRM records"}
+        - {name: bankruptcy_flag,     type: BOOLEAN, not_null: true,  description: "OR across all CRM records"}
+        - {name: crm_record_count,   type: INTEGER, not_null: true,  description: "Number of CRM records collapsed into this golden_id"}
+
+    - name: gold_c360_accounts
+      description: All product accounts (card, loan, deposit) linked to golden_id
+      columns:
+        - {name: golden_id,           type: VARCHAR, not_null: true}
+        - {name: product_category,    type: VARCHAR, not_null: true, description: "card | loan | deposit"}
+        - {name: account_id,          type: VARCHAR, not_null: true}
+        - {name: dpd,                 type: INTEGER, not_null: false}
+        - {name: dpd_bucket,          type: VARCHAR, not_null: false}
+        - {name: chargeoff_flag,      type: BOOLEAN, not_null: false}
+
+    - name: gold_c360_cases
+      description: Collections cases linked to golden_id
+      columns:
+        - {name: golden_id,           type: VARCHAR, not_null: true}
+        - {name: case_id,             type: VARCHAR, not_null: true}
+        - {name: case_status,         type: VARCHAR, not_null: true}
+        - {name: current_bucket,      type: VARCHAR, not_null: false}
+        - {name: total_overdue,       type: DOUBLE,  not_null: false}
+
+quality_rules:
+  - rule_id: QR-001
+    description: "golden_id must be unique in gold_c360_customer"
+    type: uniqueness
+    severity: critical
+
+  - rule_id: QR-002
+    description: "consent_call and consent_sms must not be NULL"
+    type: completeness
+    severity: critical
+
+  - rule_id: QR-003
+    description: "Deceased customers must not have open collections cases"
+    type: consistency
+    severity: high
+
+  - rule_id: QR-004
+    description: "DPD bucket must be consistent with DPD value"
+    type: consistency
+    severity: medium
+
+  - rule_id: QR-005
+    description: "Every collections case must link to an existing CRM record"
+    type: referential_integrity
+    severity: high
+
+allowed_uses:
+  - Collections agent worklist and Next Best Action
+  - Collections Ask (NL-to-SQL analytics)
+  - Regulatory reporting (with PII masking)
+
+restricted_uses:
+  - Must NOT use gender, religion, race, marital status in decisioning
+  - Must NOT contact deceased, ceased-communication, or DNCL customers
+
+refresh_frequency: daily
+sla_freshness_hours: 24

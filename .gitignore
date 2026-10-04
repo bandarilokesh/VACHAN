@@ -11,6 +11,8 @@ env/
 # Data & Databases
 *.duckdb
 *.duckdb.wal
+collections_c360/
+maple_data/
 data/raw/
 data/processed/
 

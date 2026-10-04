@@ -1,0 +1,42 @@
+{
+  "pipeline_run": "2026-10-04T22:23:54.428966",
+  "elapsed_seconds": 156.4,
+  "golden_customers": 1014879,
+  "findings": [
+    {
+      "check": "golden_id_uniqueness",
+      "status": "PASS",
+      "detail": "0 duplicates"
+    },
+    {
+      "check": "crm_declared_duplicates",
+      "status": "INFO",
+      "detail": "5,941 CRM records flagged as duplicates"
+    },
+    {
+      "check": "deceased_in_active_collections",
+      "status": "PASS",
+      "detail": "0 deceased customers with open cases"
+    },
+    {
+      "check": "vulnerability_missing_type",
+      "status": "PASS",
+      "detail": "0 flagged vulnerable but missing type"
+    },
+    {
+      "check": "consent_null_check",
+      "status": "PASS",
+      "detail": "0 records with null consent_call or consent_sms"
+    },
+    {
+      "check": "card_dpd_bucket_mismatch",
+      "status": "PASS",
+      "detail": "0 cards with dpd>0 but bucket='current'"
+    },
+    {
+      "check": "orphan_collections_cases",
+      "status": "WARN",
+      "detail": "11,137 cases with no matching CRM record"
+    }
+  ]
+}
