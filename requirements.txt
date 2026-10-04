@@ -1,0 +1,24 @@
+# Core Data Engineering & Transformation
+dbt-core
+dbt-duckdb
+duckdb
+dagster
+dagster-webserver
+dagster-dbt
+
+# Machine Learning & Feature Store
+feast
+lightgbm
+scikit-learn
+pandas
+shap
+ortools
+splink
+
+# API & Frontend
+fastapi
+uvicorn
+streamlit
+
+# NLP & Hugging Face
+huggingface-hub
